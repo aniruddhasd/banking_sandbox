@@ -12,18 +12,15 @@ defmodule BankingSandboxWeb.PageLive do
       {:ok, socket}
     end
 
-    def handle_info(%{event: "customer", payload: %{value: value} } = data, %{assigns: %{customers: customers}} = socket) do
-      Logger.info"live customer #{inspect data}"      
+    def handle_info(%{event: "customer", payload: %{value: value} } = _data, %{assigns: %{customers: customers}} = socket) do
       {:noreply, socket |> assign(customers: customers + value)}
     end
 
-    def handle_info(%{event: "account", payload: %{value: value} } = data, %{assigns: %{accounts: accounts}} = socket) do
-      Logger.info"live account #{inspect data}"      
+    def handle_info(%{event: "account", payload: %{value: value} } = _data, %{assigns: %{accounts: accounts}} = socket) do
       {:noreply, socket |> assign(accounts: accounts + value)}
     end
 
-    def handle_info(%{event: "transaction", payload: %{value: value} } = data, %{assigns: %{transactions: transactions}} = socket) do
-      Logger.info"live transaction #{inspect data}"      
+    def handle_info(%{event: "transaction", payload: %{value: value} } = _data, %{assigns: %{transactions: transactions}} = socket) do
       {:noreply, socket |> assign(transactions: transactions + value)}
     end    
   

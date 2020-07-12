@@ -1,7 +1,6 @@
 defmodule BankingSandbox.Banking do
 
     alias BankingSandbox.Workers.{CustomerTracker, AccountTracker}
-    require Logger
     def get_customer_accounts(token) do
         with {:ok, account_refs} <- get_customer_account_refs(token),
             accounts <- get_accounts(account_refs) do
@@ -14,7 +13,7 @@ defmodule BankingSandbox.Banking do
 
     def get_customer_account(token, account_id) do
         with    {:ok, account_ref} <- get_customer_account_ref(token, account_id),
-                account <- GenServer.call(account_ref, {:get_account}) do
+                account <- AccountTracker.get_account(account_ref) do
                     {:ok, account}
         else
             {:error, reason} ->
@@ -25,7 +24,7 @@ defmodule BankingSandbox.Banking do
 
     def get_customer_account_transactions(token, account_id) do
         with {:ok, account_ref} <- get_customer_account_ref(token, account_id),
-                transactions <- GenServer.call(account_ref, {:get_transactions}) do
+                transactions <- AccountTracker.get_account_transactions(account_ref) do
                     {:ok, transactions}
         else
             {:error, reason} ->
@@ -35,8 +34,8 @@ defmodule BankingSandbox.Banking do
         
 
     def get_customer_account_refs(token) do
-        with {:ok, customer_ref} <- CustomerTracker.get_customer(token),
-                account_refs <- CustomerTracker.get_cutomer_accounts(customer_ref) do                
+        with {:ok, customer_ref} <- CustomerTracker.get_customer_via_token(token),
+                account_refs <- CustomerTracker.get_customer_accounts(customer_ref) do                
                 {:ok, account_refs}
         else
             {:error, reason} ->
@@ -46,7 +45,7 @@ defmodule BankingSandbox.Banking do
 
     def get_customer_account_ref(token, account_id) do
         with {:ok, account_refs} <- get_customer_account_refs(token),
-                {:ok, account_ref} <- AccountTracker.get_account(account_id),
+                {:ok, account_ref} <- AccountTracker.get_account_via_account_id(account_id),
                 true <- account_ref in account_refs do
                     {:ok, account_ref}
         else
@@ -57,10 +56,8 @@ defmodule BankingSandbox.Banking do
     end
 
     def get_accounts(account_refs) do
-        Logger.info"account_refs #{inspect account_refs}"
         Enum.map(account_refs, fn account_ref ->
-            Logger.info"account_ref #{inspect account_ref}"
-            GenServer.call(account_ref, {:get_account})
+            AccountTracker.get_account(account_ref)
         end)
     end    
 end

@@ -23,7 +23,7 @@ defmodule BankingSandboxWeb.Router do
   #Other scopes may use custom stacks.
   scope "/", BankingSandboxWeb do
     pipe_through :api
-    get "/accounts", PageController, :index
+    get "/accounts", PageController, :list
     get "/accounts/:account_id", PageController, :show
     get "/accounts/:account_id/transactions", PageController, :show_transactions
 

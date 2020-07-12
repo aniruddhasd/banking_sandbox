@@ -13,16 +13,17 @@ defmodule BankingSandbox.Application do
       {Phoenix.PubSub, name: BankingSandbox.PubSub},
       # Start the Endpoint (http/https)
       BankingSandboxWeb.Endpoint,
+      BankingSandbox.BankServer,
       {Registry, keys: :unique, name: BankingSandbox.Registry},
       {DynamicSupervisor, name: BankingSandbox.PrimarySupervisor, strategy: :one_for_one},
-      BankingSandbox.BankServer
+      
       # Start a worker by calling: BankingSandbox.Worker.start_link(arg)
       # {BankingSandbox.Worker, arg}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: BankingSandbox.Supervisor]
+    opts = [strategy: :rest_for_one, name: BankingSandbox.Supervisor]
     Supervisor.start_link(children, opts)
   end
 

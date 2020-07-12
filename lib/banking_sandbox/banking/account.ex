@@ -24,6 +24,7 @@ defmodule BankingSandbox.Account do
     @doc ~s"""
             Generate data to mimic new account details
     """
+    def account_data_seeder(name) when is_nil(name), do: raise "Illegitimate customer name"
     def account_data_seeder(name) do
         id = "test_acc_"<>Helpers.generate_random_string(6)        
         institution =  Helpers.generate_random([%{name: "One Bank",id: "one_bank"}, %{name: "World Bank", id: "world_bank"}, %{name: "Global Bank", id: "global_bank"}],1)

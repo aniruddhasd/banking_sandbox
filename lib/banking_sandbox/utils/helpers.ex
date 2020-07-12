@@ -1,5 +1,5 @@
 defmodule BankingSandbox.Utils.Helpers do
-    require Logger
+
     alias BankingSandbox.Utils.Constants
     @epoch Constants.epoch
     @spend_types Constants.spend_types
@@ -10,10 +10,6 @@ defmodule BankingSandbox.Utils.Helpers do
     @transaction_types_credit Constants.transaction_types_credit
     def generate_random(data,pick = 1) do
         Enum.take_random(data, pick) |> hd
-    end
-
-    def generate_random(data,pick) do
-        Enum.take_random(data, pick)
     end
 
     def generate_random_string(length) do
@@ -34,8 +30,8 @@ defmodule BankingSandbox.Utils.Helpers do
     end
 
     def generate_name() do
-        name = Enum.take_random(@first_names,1) ++ Enum.take_random(@last_names,1)
-                |>Enum.join(" ")    
+        Enum.take_random(@first_names,1) ++ Enum.take_random(@last_names,1)
+            |>Enum.join(" ")    
     end
 
     def spend_type() do
@@ -59,7 +55,7 @@ defmodule BankingSandbox.Utils.Helpers do
         generate_random([:debit, :credit],1)
     end
 
-    def generate_transaction_meta(balance) do
+    def generate_transaction_meta(_balance) do
         :credit
     end    
 
@@ -79,16 +75,12 @@ defmodule BankingSandbox.Utils.Helpers do
         generate_random(1..(2 * balance),1)/3 |> Float.floor(2)
     end
 
-    def generate_transaction_amount(:credit, balance) do
+    def generate_transaction_amount(:credit, _balance) do
         500.0
     end
 
     def generate_transaction_date() do
         delta = ((DateTime.utc_now |> DateTime.to_unix) - @epoch.unix_time) |> div(10)
         Date.add(@epoch.date, delta) |> Date.to_string        
-    end
-
-    def read do
-        Logger.info"#{inspect @epoch}"
     end
 end

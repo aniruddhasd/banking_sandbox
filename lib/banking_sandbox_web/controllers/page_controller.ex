@@ -2,7 +2,7 @@ defmodule BankingSandboxWeb.PageController do
   use BankingSandboxWeb, :controller
   alias BankingSandbox.Banking
   require Logger
-  def index(conn, _params) do
+  def list(conn, _params) do
     token = conn |> Plug.Conn.get_req_header("authorization") |> hd
     with {:ok, accounts} <- Banking.get_customer_accounts(token) do
       conn

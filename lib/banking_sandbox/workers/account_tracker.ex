@@ -1,5 +1,5 @@
 defmodule BankingSandbox.Workers.AccountTracker do
-    require Logger    
+
     use GenServer, restart: :temporary
     alias BankingSandbox.{Account, Transaction}
     alias BankingSandbox.Utils.Helpers
@@ -15,7 +15,7 @@ defmodule BankingSandbox.Workers.AccountTracker do
         DynamicSupervisor.start_child(@supervisor, {__MODULE__, opts})
     end
 
-    def get_account(account_id) do
+    def get_account_via_account_id(account_id) do
         with [{pid, _}]  <- Registry.lookup(@registry, {__MODULE__, account_id}),
                 true <- Process.alive?(pid) do
                     {:ok, pid}
@@ -47,6 +47,14 @@ defmodule BankingSandbox.Workers.AccountTracker do
     
     def handle_call({:get_transactions},_,state) do
         {:reply,Map.get(state, :transactions) ,state}
+    end    
+
+    def get_account(pid) do
+        GenServer.call(pid,{:get_account})
+    end
+
+    def get_account_transactions(pid) do
+        GenServer.call(pid,{:get_transactions})
     end    
 
     def handle_cast({:transaction},state) do        
