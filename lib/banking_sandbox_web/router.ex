@@ -26,6 +26,7 @@ defmodule BankingSandboxWeb.Router do
     get "/accounts", PageController, :list
     get "/accounts/:account_id", PageController, :show
     get "/accounts/:account_id/transactions", PageController, :show_transactions
+    get "/accounts/:account_id/transactions/:transaction_id", PageController, :show_transaction
 
   end
 

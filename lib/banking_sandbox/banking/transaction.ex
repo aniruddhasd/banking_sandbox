@@ -12,7 +12,9 @@ defmodule BankingSandbox.Transaction do
             amount: nil,
             account_id: ""
 
-
+    @doc """
+        Create a transaction struct for debit type with skeleton data
+    """
     def make_transaction({:debit, type, amount, date}, %{balances: %{available: available}} = account) do
         id = "test_txn_"<> Helpers.generate_random_string(6)        
         %BankingSandbox.Transaction{
@@ -30,6 +32,9 @@ defmodule BankingSandbox.Transaction do
         }
     end
 
+    @doc """
+        Create a transaction struct for credit type with skeleton data
+    """
     def make_transaction({:credit, type, amount, date}, %{balances: %{available: available}} = account) do
         id = "test_txn_"<> Helpers.generate_random_string(6)
         %BankingSandbox.Transaction{
@@ -47,6 +52,9 @@ defmodule BankingSandbox.Transaction do
         }
     end    
 
+    @doc """
+        Add transaction to list of account's transactions
+    """
     def add_transaction(transactions, transaction) do
         transactions ++ [transaction]
     end

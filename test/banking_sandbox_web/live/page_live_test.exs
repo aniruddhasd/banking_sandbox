@@ -13,6 +13,7 @@ defmodule BankingSandboxWeb.PageLiveTest do
 
   test "connected mount", %{conn: conn} do
     {:ok, _view, html} = live(conn, "/")
-    assert html =~ "Customers"
+    assert html =~ "Live Bank Server"
   end
+
 end

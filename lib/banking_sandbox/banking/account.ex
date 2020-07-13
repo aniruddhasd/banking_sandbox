@@ -22,7 +22,7 @@ defmodule BankingSandbox.Account do
             }
 
     @doc ~s"""
-            Generate data to mimic new account details
+        Generate data to mimic new account details        
     """
     def account_data_seeder(name) when is_nil(name), do: raise "Illegitimate customer name"
     def account_data_seeder(name) do
@@ -47,14 +47,23 @@ defmodule BankingSandbox.Account do
         }
     end
 
+    @doc """
+      Add newly created account to customer's list of accounts
+    """
     def add_account(accounts, account) do
       accounts ++ [account]
     end
 
+    @doc """
+      Remove newly created account from customer's list of accounts
+    """
     def remove_account(accounts, account) do
       accounts -- [account]
     end
 
+    @doc """
+      Update account balance post transaction
+    """
     def update_balance(account, %Transaction{running_balance: running_balance} = _transaction) do
         %{account | balances: %{available: running_balance, ledger: running_balance}}
     end

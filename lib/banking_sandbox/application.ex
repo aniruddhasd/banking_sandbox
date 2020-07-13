@@ -16,7 +16,7 @@ defmodule BankingSandbox.Application do
       BankingSandbox.BankServer,
       {Registry, keys: :unique, name: BankingSandbox.Registry},
       {DynamicSupervisor, name: BankingSandbox.PrimarySupervisor, strategy: :one_for_one},
-      
+      BankingSandbox.Workers.TransactionExecutor
       # Start a worker by calling: BankingSandbox.Worker.start_link(arg)
       # {BankingSandbox.Worker, arg}
     ]

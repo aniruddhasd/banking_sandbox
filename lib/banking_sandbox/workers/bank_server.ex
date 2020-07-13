@@ -1,7 +1,19 @@
 defmodule BankingSandbox.BankServer do
+    @moduledoc """
+        Manage & monitor customer & account creation
+        Maintain customer, account & transaction stats
+        Store house for all customer tokens
+    """
     use GenServer
-    alias BankingSandbox.Workers.{CustomerTracker}
-    alias BankingSandbox.Utils.Helpers
+    alias BankingSandbox.Workers.{CustomerTracker, TransactionExecutor}
+    alias BankingSandbox.Utils.{Helpers, Constants}
+
+    @customer_call_initial Constants.customer_call_initial
+    @customer_call_standard_limit Constants.customer_call_standard_limit
+    @customer_call_standard Constants.customer_call_standard
+    @account_call Constants.account_call
+    @transaction_call_standard Constants.transaction_call_standard
+    @transaction_call_initial Constants.transaction_call_initial
     require Logger
     def start_link(_) do
 
@@ -9,10 +21,16 @@ defmodule BankingSandbox.BankServer do
     end
     
     def init(_state) do                
-        state = %{tokens: [], customer_call: 1000, account_call: 10000, transaction_call: 1000, accounts: 0, transactions: 0, customers: 0}
-        #BankingSandboxWeb.Endpoint.subscribe("banking")
-        Process.send_after(self(), :customer_call, state.customer_call)        
-        {:ok, state}
+        state = %{tokens: [], accounts: 0, transactions: 0, customers: 0}        
+        BankingSandboxWeb.Endpoint.subscribe("banking")
+        {:ok, state, {:continue, :begin_banking}}
+    end
+
+    def handle_continue(:begin_banking, state) do        
+        Process.send_after(self(), {:customer_call, @customer_call_initial}, @customer_call_initial)  
+        Process.send_after(self(), {:account_call, @account_call}, @account_call)
+        Process.send_after(TransactionExecutor, {:transaction_call, @transaction_call_standard}, @transaction_call_initial)
+        {:noreply, state}
     end
 
     def handle_call(:get_token_list, _, state) do
@@ -23,54 +41,38 @@ defmodule BankingSandbox.BankServer do
         {:reply,  %{accounts: accounts, transactions: transactions, customers: customers}, state}
     end
 
-    def handle_info(:customer_call, %{tokens: tokens, customer_call: customer_call} = state) do
+    def handle_info({:customer_call, customer_call}, %{tokens: tokens} = state) do
         token = Helpers.generate_access_token()
         tokens = case CustomerTracker.create_customer(token) do
             {:ok, _customer_ref} -> tokens ++ [token]
             _ -> tokens
         end 
         BankingSandboxWeb.Endpoint.broadcast("banking", "customer", %{value: 1, tokens: tokens})
-        state = %{state | tokens: tokens, customer_call: customer_call * 2}
-        Process.send_after(self(), :customer_call, customer_call * 2)
-        Process.send_after(self(), :account_call, state.account_call)
-        Process.send_after(self(), :transaction_call, 10000)
-        Logger.warn"TOKENS #{inspect tokens}"
+        customer_call = if length(tokens) < @customer_call_standard_limit, do: customer_call, else: @customer_call_standard
+        state = %{state | tokens: tokens}
+        Process.send_after(self(), {:customer_call, customer_call}, customer_call)
         {:noreply, state}
     end
 
-    def handle_info(:account_call, %{tokens: tokens, account_call: account_call} = state) do
+    def handle_info({:account_call, account_call}, %{tokens: tokens} = state) do
         Helpers.generate_random(tokens,1)
         |> CustomerTracker.get_customer_via_token()
         |> case do
-            {:ok, customer_ref} -> GenServer.cast(customer_ref, {:add_account})
+            {:ok, customer_ref} -> CustomerTracker.add_account_to_customer(customer_ref)
             _ -> nil
         end
-        state = %{state | account_call: account_call * 2}
-        Process.send_after(self(), :account_call, account_call * 2)
+
+        Process.send_after(self(), {:account_call, account_call}, account_call)
+        
         {:noreply, state}
     end
 
-    def handle_info(:transaction_call, %{tokens: tokens, transaction_call: transaction_call} = state) do
-        with {:ok, customer_ref} <- Helpers.generate_random(tokens,1) |> CustomerTracker.get_customer_via_token(),
-                accounts = GenServer.call(customer_ref, {:get_customer_accounts}),
-                true <- accounts != [],
-                account_ref = Helpers.generate_random(accounts,1) do                
-                    GenServer.cast(account_ref, {:transaction})
-        else    
-            {:error, reason} ->
-                {:error, reason}
-            false ->
-                {:error, "No accounts attached to this customer yet"}
-        end
-        state = %{state | transaction_call: transaction_call * 2}
-        Process.send_after(self(), :transaction_call, transaction_call * 2)
-        {:noreply, state}
-    end    
-
     def handle_info({:remove_token, token}, %{tokens: tokens} = state)do
         updated_tokens = tokens -- [token]
-        #BankingSandboxWeb.Endpoint.broadcast("banking", "customer", %{value: -1, tokens: updated_tokens})
         state = %{state | tokens: updated_tokens}
+
+        BankingSandboxWeb.Endpoint.broadcast("banking", "customer", %{value: -1, tokens: updated_tokens})
+                
         {:noreply, state}
     end
 
@@ -89,15 +91,16 @@ defmodule BankingSandbox.BankServer do
         {:noreply, state}
     end    
 
-    def handle_info(data, state) do        
-        Logger.info"data here #{inspect data}"
-        {:noreply, state}
-    end    
-
+    @doc """
+        Get List of tokens for all customers of the bank
+    """
     def get_token_list() do
         GenServer.call(__MODULE__,:get_token_list)
     end
 
+    @doc """
+        Get current banking stats
+    """
     def get_live_stats() do
         GenServer.call(__MODULE__,:get_live_stats)
     end

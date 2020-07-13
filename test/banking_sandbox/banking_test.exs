@@ -50,7 +50,7 @@ defmodule BankingSandbox.BankingTest do
         end
 
         test "amount is debitted when transaction meta is :debit", %{account: account} do            
-            transaction_skeleton = {:debit, "tax", 22.66, "2020-06-23"}
+            transaction_skeleton = {:debit, "tax", 14.56, "2020-06-23"}
             transaction = Transaction.make_transaction(transaction_skeleton, account)
 
             assert account.balances.available > transaction.running_balance
@@ -67,7 +67,7 @@ defmodule BankingSandbox.BankingTest do
 
     end  
     
-    describe "customers & banking" do
+    describe "Banking" do
         setup do
             token = Helpers.generate_access_token()
             {:ok, customer_ref} = CustomerTracker.create_customer(token)
@@ -90,8 +90,8 @@ defmodule BankingSandbox.BankingTest do
         end
 
         test "Validated customer default account is setup during creation", %{customer_ref: customer_ref} do
-            accounts = CustomerTracker.get_customer_accounts(customer_ref)
-            assert true == length(accounts) > 0
+            [hd | _tail] = CustomerTracker.get_customer_accounts(customer_ref)
+            assert true == !is_nil(hd)
         end
 
         test "Validate customer details in default account, setup during creation", %{customer_ref: customer_ref} do
@@ -103,19 +103,18 @@ defmodule BankingSandbox.BankingTest do
 
         test "Add new accounts to customer", %{customer_ref: customer_ref} do
             accounts = CustomerTracker.get_customer_accounts(customer_ref)
-            GenServer.cast(customer_ref, {:add_account})
+            CustomerTracker.add_account_to_customer(customer_ref)
             updated_accounts = CustomerTracker.get_customer_accounts(customer_ref)
             assert length(accounts) < length(updated_accounts)
         end
 
-        @tag run: true
         test "List all account with details of customer", %{customer_ref: customer_ref, token: token} do
-            GenServer.cast(customer_ref, {:add_account})
-            GenServer.cast(customer_ref, {:add_account})
+            CustomerTracker.add_account_to_customer(customer_ref)
+            CustomerTracker.add_account_to_customer(customer_ref)
             {:ok, [hd | _tail]} = Banking.get_customer_accounts(token)
             account_refs = CustomerTracker.get_customer_accounts(customer_ref)
             accounts_via_refs = Enum.map(account_refs, fn account_ref ->
-                GenServer.call(account_ref, {:get_account})
+                AccountTracker.get_account(account_ref)
             end)
             assert hd in accounts_via_refs
         end
@@ -125,6 +124,32 @@ defmodule BankingSandbox.BankingTest do
             {:ok, accounts} = Banking.get_customer_accounts(token)
             Process.sleep(3000)
             assert true == is_list(accounts)
+        end
+
+        test "remove dead account from customer list & tracking list when it fails due to some reason", %{customer_ref: customer_ref} do
+            [account_ref | _tail] = CustomerTracker.get_customer_accounts(customer_ref)
+            try do
+                GenServer.call(account_ref, :random_request)
+            catch
+                :exit, _ -> IO.puts "Crashing Server for Testing, caught expection from crashing test process"
+            end
+            assert true == Process.alive?(customer_ref)
+            updated_accounts = CustomerTracker.get_customer_accounts(customer_ref)
+            assert true == account_ref not in updated_accounts
+        end
+
+        test "remove token associated with a customer who has crashed for some reason" do
+            token = BankServer.get_token_list() |> Helpers.generate_random(1)
+            {:ok, customer_ref_via_token} = CustomerTracker.get_customer_via_token(token)
+            assert true == Process.alive?(customer_ref_via_token)
+            try do
+                GenServer.call(customer_ref_via_token, :random_request)
+            catch
+                :exit, _ -> IO.puts "Crashing Server for Testing, caught expection from crashing test process"
+            end
+
+            assert true != Process.alive?(customer_ref_via_token)
+            assert true == token not in BankServer.get_token_list()
         end
 
     end
