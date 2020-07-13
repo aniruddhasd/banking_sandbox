@@ -73,7 +73,7 @@ defmodule BankingSandbox.Workers.CustomerTracker do
         with    {:ok, account} <- AccountTracker.create_account(customer_name),
                 updated_accounts = Account.add_account(accounts, account) do
                 Process.monitor(account)
-                BankingSandboxWeb.Endpoint.broadcast("banking", "account", %{value: 1})
+                #BankingSandboxWeb.Endpoint.broadcast("banking", "account", %{value: 1})
                 %{state | accounts: updated_accounts}
         else
             {:error,_} ->
@@ -84,7 +84,7 @@ defmodule BankingSandbox.Workers.CustomerTracker do
     def handle_info({:DOWN, _, :process, account_pid,  _reason} = _data, %{accounts: accounts} = state) do
         updated_accounts = Account.remove_account(accounts, account_pid)
         state = %{state | accounts: updated_accounts}
-        BankingSandboxWeb.Endpoint.broadcast("banking", "account", %{value: -1})
+        #BankingSandboxWeb.Endpoint.broadcast("banking", "account", %{value: -1})
         {:noreply, state}
     end 
 

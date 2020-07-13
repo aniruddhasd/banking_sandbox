@@ -9,8 +9,8 @@ defmodule BankingSandbox.BankServer do
     end
     
     def init(_state) do                
-        state = %{tokens: [], customer_call: 10, account_call: 10000, transaction_call: 1000, accounts: 0, transactions: 0, customers: 0}
-        BankingSandboxWeb.Endpoint.subscribe("banking")
+        state = %{tokens: [], customer_call: 1000, account_call: 10000, transaction_call: 1000, accounts: 0, transactions: 0, customers: 0}
+        #BankingSandboxWeb.Endpoint.subscribe("banking")
         Process.send_after(self(), :customer_call, state.customer_call)        
         {:ok, state}
     end
@@ -29,11 +29,11 @@ defmodule BankingSandbox.BankServer do
             {:ok, _customer_ref} -> tokens ++ [token]
             _ -> tokens
         end 
-        BankingSandboxWeb.Endpoint.broadcast("banking", "customer", %{value: 1})
+        BankingSandboxWeb.Endpoint.broadcast("banking", "customer", %{value: 1, tokens: tokens})
         state = %{state | tokens: tokens, customer_call: customer_call * 2}
         Process.send_after(self(), :customer_call, customer_call * 2)
         Process.send_after(self(), :account_call, state.account_call)
-        Process.send_after(self(), :transaction_call, state.transaction_call)
+        Process.send_after(self(), :transaction_call, 10000)
         Logger.warn"TOKENS #{inspect tokens}"
         {:noreply, state}
     end
@@ -62,13 +62,14 @@ defmodule BankingSandbox.BankServer do
             false ->
                 {:error, "No accounts attached to this customer yet"}
         end
-        #state = %{state | transaction_call: transaction_call * 1.2 |> trunc}
-        Process.send_after(self(), :transaction_call, transaction_call)
+        state = %{state | transaction_call: transaction_call * 2}
+        Process.send_after(self(), :transaction_call, transaction_call * 2)
         {:noreply, state}
     end    
 
     def handle_info({:remove_token, token}, %{tokens: tokens} = state)do
         updated_tokens = tokens -- [token]
+        #BankingSandboxWeb.Endpoint.broadcast("banking", "customer", %{value: -1, tokens: updated_tokens})
         state = %{state | tokens: updated_tokens}
         {:noreply, state}
     end

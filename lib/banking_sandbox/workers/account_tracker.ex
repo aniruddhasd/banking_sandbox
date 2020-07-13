@@ -63,7 +63,7 @@ defmodule BankingSandbox.Workers.AccountTracker do
         with    %Transaction{} = transaction <- Transaction.make_transaction(transaction_skeleton, account),
                 %Account{} = updated_account <- Account.update_balance(state.account,transaction),
                 updated_transactions <- Transaction.add_transaction(state.transactions, transaction) do
-                BankingSandboxWeb.Endpoint.broadcast("banking", "transaction", %{value: 1})
+                #BankingSandboxWeb.Endpoint.broadcast("banking", "transaction", %{value: 1})
                 state = %{state | account: updated_account, transactions: updated_transactions}
                 {:noreply, state}
         else

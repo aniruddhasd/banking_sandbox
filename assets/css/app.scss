@@ -89,3 +89,38 @@
 .alert:empty {
   display: none;
 }
+
+
+.main-container {
+  border: 3px solid #fff;
+  padding: 20px;
+}
+
+.sub-container {
+  width: 50%;
+  float: left;
+  padding: 20px;
+}
+ 
+.token-table{
+  font-family:arial;
+  height:210px;
+  width:300px;
+}
+.ul-style{
+  list-style:none;
+  max-height:210px;
+  margin:0;
+  overflow:auto;
+  padding:0;
+  text-indent:10px;
+}
+.li-style{
+  line-height: 25px;
+  margin-bottom: 0;
+  padding-bottom: 1.0rem;
+  padding-top: 1.0rem;
+}
+.li-style:nth-child(even){
+  background: #fddbdb;
+}
