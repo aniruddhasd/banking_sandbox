@@ -20,14 +20,13 @@ defmodule BankingSandboxWeb.Router do
     live "/", PageLive, :index
   end
 
-  #Other scopes may use custom stacks.
+  # Other scopes may use custom stacks.
   scope "/", BankingSandboxWeb do
     pipe_through :api
     get "/accounts", PageController, :list
     get "/accounts/:account_id", PageController, :show
     get "/accounts/:account_id/transactions", PageController, :show_transactions
     get "/accounts/:account_id/transactions/:transaction_id", PageController, :show_transaction
-
   end
 
   # Enables LiveDashboard only for development
