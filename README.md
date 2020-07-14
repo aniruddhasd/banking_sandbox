@@ -22,11 +22,17 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 ## Banking Sandbox APIs usage:
 
 GET /accounts
-  curl --request GET 'http://localhost:4000/accounts' \
+```console
+curl --request GET 'http://localhost:4000/accounts' \
   --header 'Authorization: <YOUR-TOKEN>'
+```  
 GET /accounts/:account_id
-  curl --request GET 'http://localhost:4000/accounts/<YOUR-ACCOUNT-ID>' \
+```console
+curl --request GET 'http://localhost:4000/accounts/<YOUR-ACCOUNT-ID>' \
   --header 'Authorization: <YOUR-TOKEN>'
+```  
 GET /accounts/:account_id/transactions
-  curl --request GET 'http://localhost:4000/accounts/<YOUR-ACCOUNT-ID>/transactions' \
+```console
+curl --request GET 'http://localhost:4000/accounts/<YOUR-ACCOUNT-ID>/transactions' \
   --header 'Authorization: <YOUR-TOKEN>'
+```
