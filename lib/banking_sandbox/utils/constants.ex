@@ -115,7 +115,7 @@ defmodule BankingSandbox.Utils.Constants do
       "Jackson"
     ]
 
-  def epoch, do: %{date: ~D[2020-01-01], unix_time: DateTime.utc_now() |> DateTime.to_unix()}
+  def epoch, do: %{date: ~D[2020-01-01]}
   def deposit_types, do: ["Salary", "Dividend", "Interest Deposit", "Cash Deposit"]
   def transaction_types_debit, do: ["card_payment", "cash", "cheque", "tax"]
   def transaction_types_credit, do: ["cash", "cheque"]

@@ -1,18 +1,32 @@
 # BankingSandbox
 
-To start your Phoenix server:
+## To start the Banking Sandbox server, run
+
+  To start the Banking Sandbox server, run
+  ```console
+  $ docker-compose up
+  ```
+  This will download the necessary deps, create the environment and start the server at [`localhost:4000`](http://localhost:4000)
+
+  If you have an existing phoenix environment, setup for live_view:
 
   * Setup the project with `mix setup`
   * Start Phoenix endpoint with `mix phx.server`
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+## Banking Server Dashboard
+  The Live Bank Server display current stats about the banking server. Total number of customers, accounts & transactions (credit & debit), updated in real-time.
+  The Token list acts as a source to pick from, to test out the APIs.
 
-## Learn more
+## Banking Sandbox APIs usage:
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+GET /accounts
+  curl --request GET 'http://localhost:4000/accounts' \
+  --header 'Authorization: <YOUR-TOKEN>'
+GET /accounts/:account_id
+  curl --request GET 'http://localhost:4000/accounts/<YOUR-ACCOUNT-ID>' \
+  --header 'Authorization: <YOUR-TOKEN>'
+GET /accounts/:account_id/transactions
+  curl --request GET 'http://localhost:4000/accounts/<YOUR-ACCOUNT-ID>/transactions' \
+  --header 'Authorization: <YOUR-TOKEN>'

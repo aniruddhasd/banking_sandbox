@@ -44,33 +44,4 @@ defmodule BankingSandboxWeb.PageLive do
     transactions = if meta == :credit, do: {credits + 1, debits}, else: {credits, debits + 1}
     {:noreply, socket |> assign(transactions: transactions)}
   end
-
-  def render(assigns) do
-    ~L"""
-    <div class="main-container">
-    <div class="sub-container">
-      <div class="title">
-          Live Bank Server
-      </div>
-      <div class="content-text">Customers: <%= @customers %></div>
-      <div class="content-text">Accounts: <%= @accounts %></div>
-      <div class="content-text">Transactions: <%= elem(@transactions,0) + elem(@transactions,1) %>
-        <div class="content-sub-text">Credit: <%= elem(@transactions,0) %> </div>
-        <div class="content-sub-text">Debit: <%= elem(@transactions,1) %> </div>
-        </div>
-    </div>
-    <div class="sub-container">
-    <div class="title">
-            Tokens
-    </div>
-    <div class="token-table"> 
-    <ul class="ul-style">
-    <%= for token <- @tokens do %>
-        <li class="li-style"> <%= token %> </li>
-    <% end %>
-    </ul>
-    </div>
-    </div>
-    """
-  end
 end
